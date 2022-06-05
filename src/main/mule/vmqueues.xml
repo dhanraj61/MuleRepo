@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="2d06546c-3f96-4ea8-aa4a-e2cfac0c68f5" >
+		<http:listener-connection host="localhost" port="8081" />
+	</http:listener-config>
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="5627b45e-3c74-4283-9fc5-3d5240877a41" >
+		<vm:connection />
+		<vm:queues >
+			<vm:queue queueName="vm1" />
+			<vm:queue queueName="vm2" />
+		</vm:queues>
+	</vm:config>
+	<flow name="vmqueuesFlow" doc:id="9b54901b-1cab-4d71-82d7-cb562386547f" >
+		<http:listener doc:name="Listener" doc:id="7f563f98-64ff-4a22-b188-83bb99d568a5" config-ref="HTTP_Listener_config1" path="/vm"/>
+		<set-payload value="#[10]" doc:name="Set Payload" doc:id="51681970-e404-4124-9809-333216638d6b" />
+		<vm:publish queueName="vm1" doc:id="bc1c98f3-783b-4a20-b5ae-205e7a04c88b" sendCorrelationId="ALWAYS" config-ref="VM_Config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="96b088f3-27f9-497e-b979-7343b134e909" message="#['published to queue' ++ payload]"/>
+	</flow>
+	<flow name="vmqueuesFlow1" doc:id="e02e9152-9b3f-45cc-8067-caf5854e57d6" >
+		<vm:listener queueName="vm1" doc:name="Listener" doc:id="a7155719-3ce9-4774-9016-c0b1c03f3e90" config-ref="VM_Config" timeout="30" transactionalAction="ALWAYS_BEGIN"/>
+		<logger level="INFO" doc:name="Logger" doc:id="92bd584a-6453-48e6-b51e-7ee344e19a88" message='#[payload]'/>
+		<set-payload value="#[20]" doc:name="Set Payload" doc:id="aa07ed08-28e3-4064-b413-75d5d92a1b75" />
+		<logger level="INFO" doc:name="Logger" doc:id="e3c14778-93e9-43c5-8812-6c6c36a4eceb" message='#[payload]'/>
+	</flow>
+</mule>
